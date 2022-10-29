@@ -111,3 +111,15 @@ docker compose up -d --build
 
 
 10. Django_App内でDjangoアプリを開発して行く
+
+
+11. docker-compose.prod.ymlの編集
+```
+uwsgi --socket :8000 --module [アプリ名].wsgi --py-autoreload 1 --logto /tmp/mylog.log
+```
+
+
+12. 本番環境で立ち上げ
+```
+docker compose -f docker-compose.prod.yml up -d --build
+```

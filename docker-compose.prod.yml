@@ -6,11 +6,11 @@ services:
     # コンテナ名をmysqlに設定
     container_name: mysql
     # MySQLのDockerfileをビルドする
-    # build:
-    build: .Docker/MySQL
+    build:
+    # build: .Docker/MySQL
       # ビルドコンテキストはカレントディレクトリ
-      # context: .
-      # dockerfile: Docker/MySQL/Dockerfile
+      context: .
+      dockerfile: Docker/MySQL/Dockerfile
     platform: linux/x86_64
     volumes:
       - mysql_data:/var/lib/mysql
@@ -23,11 +23,11 @@ services:
     # コンテナ名をappに設定
     container_name: django
     # DjangoのDockerfileをビルドする
-    build: ./Docker/Django
-    # build: 
+    # build: ./Docker/Django
+    build: 
       # ビルドコンテキストはカレントディレクトリ
-      # context: .
-      # dockerfile: Docker/Django/Dockerfile
+      context: .
+      dockerfile: Docker/Django/Dockerfile
     volumes:
       - ./Django_App:/code
       - ./static:/static
@@ -36,7 +36,7 @@ services:
       - "8000"
     # uWSGIを起動させる
     command:  bash -c "python manage.py collectstatic --noinput && \
-              uwsgi --socket :8000 --module app.wsgi --py-autoreload 1 --logto /tmp/mylog.log"
+              uwsgi --socket :8000 --module django_sample.wsgi --py-autoreload 1 --logto /tmp/mylog.log"
     env_file:
       - .env
     depends_on:
@@ -48,14 +48,16 @@ services:
     # コンテナ名をwebに指定
     container_name: nginx
     # NginxのDockerfileをビルドする
-    # build:
-    build: ./Docker/Nginx
+    build:
+    # build: ./Docker/Nginx
       # ビルドコンテキストはカレントディレクトリ
-      # context: .
-      # dockerfile: Docker/Nginx/Dockerfile
+      context: .
+      dockerfile: Docker/Nginx/Dockerfile
     # ボリュームを指定
     # ローカルの/staticをコンテナの/staticにマウントする
     volumes:
+      - ./Docker/Nginx/conf:/etc/nginx/conf.d
+      - ./Docker/Nginx/uwsgi_params:/etc/nginx/uwsgi_params
       - ./static:/static
     # ローカルの80番ボートをコンテナの80番ポートとつなぐ
     ports:
