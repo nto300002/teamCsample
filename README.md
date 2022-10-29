@@ -1,2 +1,113 @@
 # Docker_Django_uWSGI_Sample
 Docker + Django + Nginx + uWSGI + MySQL
+
+1. docker-compose.ymlと同じ階層に「.env」ファイルを作成し記述
+
+
+2. プロジェクトを新規作成
+```
+# 例：
+docker compose run django django-admin startproject [プロジェクト名] .
+```
+
+
+3. settings.pyを編集
+```
+# osのモジュールをインポート
+import os
+
+# SECRET_KEYを.envから取得
+SECRET_KEY = os.environ.get("SECRET_KEY")
+
+# DEBUGを.envから取得
+DEBUG = os.environ.get("DEBUG")
+
+# ALLOWED_HOSTSを.envから取得
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
+
+# MySQLのパラメータを.envから取得
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        # コンテナ内の環境変数をDATABASESのパラメータに反映
+        "NAME": os.environ.get("MYSQL_DATABASE"),
+        "USER": os.environ.get("MYSQL_USER"),
+        "PASSWORD": os.environ.get("MYSQL_PASSWORD"),
+        "HOST": os.environ.get("MYSQL_HOST"),
+        "PORT": os.environ.get("MYSQL_PORT"),
+    }
+}
+
+# 言語を日本語に設定
+LANGUAGE_CODE = 'ja'
+# タイムゾーンをAsia/Tokyoに設定
+TIME_ZONE = 'Asia/Tokyo'
+
+# STATIC_ROOTを設定
+# Djangoの管理者画面にHTML、CSS、Javascriptが適用されます
+STATIC_ROOT = "/static/"
+STATIC_URL = "/static/"
+
+
+# [・・・]
+
+TEMPLATES = [
+    {
+     ....
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+     ....
+]
+
+```
+
+
+4. 下記コマンドを実行する
+```
+docker compose up -d
+```
+
+* ブラウザで確認
+http://localhost:8000
+
+
+5. DBのマイグレーション
+```
+./.migration.sh
+```
+
+
+6. 管理者アカウントの作成
+  * 入力を求められるのでメッセージ従い入力
+```
+docker compose exec django ./manage.py createsuperuser
+```
+* ブラウザで確認
+http://localhost:8000/admin
+
+
+7. CSSを反映する
+```
+docker compose exec django ./manage.py collectstatic --noinput
+```
+
+
+8. 一旦Dockerをリセットする
+```
+docker compose down -v
+
+docker rm $(docker ps -a -q)
+
+docker rmi $(docker images -q)
+
+docker system prune
+
+```
+
+
+9. Dockerを起動
+```
+docker compose up -d --build
+```
+
+
+10. Django_App内でDjangoアプリを開発して行く
