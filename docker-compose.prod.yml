@@ -34,7 +34,7 @@ services:
       - "8000"
     # uWSGIを起動させる
     command:  bash -c "python manage.py collectstatic --noinput && \
-              uwsgi --socket :8000 --module django_sample.wsgi --py-autoreload 1 --logto /tmp/mylog.log"
+              uwsgi --socket :8000 --module django_wsgi.wsgi --py-autoreload 1 --logto /tmp/mylog.log"
     env_file:
       - .env
     depends_on:

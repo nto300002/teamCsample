@@ -152,3 +152,22 @@ env DJANGO_SETTINGS_MODULE = <プロジェクト名>.settings
 ```
 docker compose -f docker-compose.prod.yml up -d --build
 ```
+
+
+* ブラウザで確認
+http://localhost
+
+
+14. Dockerの停止・削除
+```
+docker compose down -v
+
+docker stop nginx
+
+docker rm $(docker ps -a -q)
+
+docker rmi $(docker images -q)
+
+docker system prune
+
+```
