@@ -112,6 +112,7 @@ docker compose up -d --build
 
 10. Django_App内でDjangoアプリを開発して行く
 
+* 本番環境設定
 
 11. docker-compose.prod.ymlの編集
 ```
@@ -119,7 +120,35 @@ uwsgi --socket :8000 --module [アプリ名].wsgi --py-autoreload 1 --logto /tmp
 ```
 
 
-12. 本番環境で立ち上げ
+12. [wsgi.ini]作成編(記述途中)
+* /<プロジェクト名>/uwsgi.iniを作成する
+```
+[uwsgi]
+chdir            = /home/www-user/<プロジェクト名>
+module           = <プロジェクト名>.wsgi:application
+pidfile          = /run/<プロジェクト名>/<プロジェクト名>.pid
+socket           = /run/<プロジェクト名>/<プロジェクト名>.sock
+home             = /home/www-user/<プロジェクト名>/.venv
+daemonize        = /home/www-user/<プロジェクト名>/<プロジェクト名>.log
+uid              = www-user
+gid              = www-users
+
+master           = true
+processes        = 5
+harakiri         = 30
+max-requests     = 5000
+vacuum           = true
+
+disable-logging  = true
+log-4xx          = false
+log-5xx          = true
+
+env DJANGO_SETTINGS_MODULE = <プロジェクト名>.settings
+```
+
+
+
+13. 本番環境で立ち上げ
 ```
 docker compose -f docker-compose.prod.yml up -d --build
 ```

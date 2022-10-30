@@ -7,7 +7,6 @@ services:
     container_name: mysql
     # MySQLのDockerfileをビルドする
     build:
-    # build: .Docker/MySQL
       # ビルドコンテキストはカレントディレクトリ
       context: .
       dockerfile: Docker/MySQL/Dockerfile
@@ -23,7 +22,6 @@ services:
     # コンテナ名をappに設定
     container_name: django
     # DjangoのDockerfileをビルドする
-    # build: ./Docker/Django
     build: 
       # ビルドコンテキストはカレントディレクトリ
       context: .
@@ -49,7 +47,6 @@ services:
     container_name: nginx
     # NginxのDockerfileをビルドする
     build:
-    # build: ./Docker/Nginx
       # ビルドコンテキストはカレントディレクトリ
       context: .
       dockerfile: Docker/Nginx/Dockerfile
