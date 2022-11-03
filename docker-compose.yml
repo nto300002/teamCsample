@@ -3,9 +3,9 @@ version: "3.9"
 
 # db(MySQL),app(Django)のコンテナを作成
 services:
-  mysql:
+  db:
     # コンテナ名をmysqlに設定
-    container_name: mysql
+    container_name: MySQL
     # MySQLのDockerfileをビルドする
     build:
       # ビルドコンテキストはカレントディレクトリ
@@ -25,10 +25,18 @@ services:
     # mysqladmin(MySQLサーバーの管理を行うクライアントを使ってDBコンテナ自身(127.0.0.1)にpingを送ってヘルスチェックを行う
     healthcheck:
       test: mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD
+      # ヘルスチェックのインターバルは10秒
+      interval: 10s
+      # タイムアウト時間は10秒
+      timeout: 10s
+      # リトライ回数は3回
+      retries: 3
+      # ヘルスチェックが失敗しても無視する時間は30秒
+      start_period: 30s
 
-  django:
-    # コンテナ名をappに設定
-    container_name: django
+  app:
+    # コンテナ名をdjangoに設定
+    container_name: Django
     # DjangoのDockerfileをビルドする
     build: 
       # ビルドコンテキストはカレントディレクトリ
@@ -54,7 +62,7 @@ services:
       - .env
     # 先にdbを起動してからappを起動する
     depends_on:
-      mysql:
+      db:
         # dbのヘルスチェックが終わってからappを起動させる
         condition: service_healthy
   
@@ -64,7 +72,7 @@ services:
     env_file:
       - .env
     links:
-      - mysql
+      - db
     ports:
       - 4000:80
     volumes:

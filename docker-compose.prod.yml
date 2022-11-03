@@ -2,9 +2,9 @@ version: "3.9"
 
 # db(MySQL),app(Django),web(Nginx)のコンテナを作成
 services:
-  mysql:
+  db:
     # コンテナ名をmysqlに設定
-    container_name: mysql
+    container_name: MySQL
     # MySQLのDockerfileをビルドする
     build:
       # ビルドコンテキストはカレントディレクトリ
@@ -14,37 +14,47 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     env_file:
-      - .env
+      - .env.prod
+    # DBのコンテナのヘルスチェックを行う
+    # mysqladmin(MySQLサーバーの管理を行うクライアントを使ってDBコンテナ自身(127.0.0.1)にpingを送ってヘルスチェックを行う
     healthcheck:
       test: mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD
+      # ヘルスチェックのインターバルは10秒
+      interval: 10s
+      # タイムアウト時間は10秒
+      timeout: 10s
+      # リトライ回数は3回
+      retries: 3
+      # ヘルスチェックが失敗しても無視する時間は30秒
+      start_period: 30s
 
-  django:
-    # コンテナ名をappに設定
-    container_name: django
+  app:
+    # コンテナ名をdjangoに設定
+    container_name: Django
     # DjangoのDockerfileをビルドする
     build: 
       # ビルドコンテキストはカレントディレクトリ
       context: .
       dockerfile: Docker/Django/Dockerfile
     volumes:
-      - ./Django_App:/code
+      - ./app_dir:/code
       - ./static:/static
     # 8000番ポートをNginx側が接続できるよう開く
     expose:
       - "8000"
     # uWSGIを起動させる
     command:  bash -c "python manage.py collectstatic --noinput && \
-              uwsgi --socket :8000 --module django_wsgi.wsgi --py-autoreload 1 --logto /tmp/mylog.log"
+              uwsgi --socket :8000 --module django_sample.wsgi --py-autoreload 1 --logto /tmp/mylog.log"
     env_file:
-      - .env
+      - .env.prod
     depends_on:
-      mysql:
+      db:
         # dbのヘルスチェックが終わってからappを起動させる
         condition: service_healthy
 
-  nginx:
-    # コンテナ名をwebに指定
-    container_name: nginx
+  web:
+    # コンテナ名をnginxに指定
+    container_name: Nginx
     # NginxのDockerfileをビルドする
     build:
       # ビルドコンテキストはカレントディレクトリ
@@ -61,7 +71,7 @@ services:
       - "80:80"
     # 先にappを起動してからwebを起動する
     depends_on:
-      - django
+      - app
       
 volumes:
   mysql_data:
